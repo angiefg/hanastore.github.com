@@ -684,6 +684,38 @@
             
             const btn = document.querySelector('#cart-sidebar button.bg-primary-600');
             const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Preparando pedido...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // 1. Construir el mensaje para WhatsApp
+                let mensaje = "🌸 ¡Hola HanaStore! Quiero realizar el siguiente pedido:\n\n";
+                
+                cart.forEach(item => {
+                    mensaje += `- ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toFixed(2)})\n`;
+                });
+
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\n`;
+                mensaje += "¿Me brindan sus números de cuenta bancaria o link de pago para confirmar mi compra y coordinar el envío? ¡Gracias! ✨";
+
+                // 2. Crear el enlace directo a tu número
+                const numeroWhatsApp = "50577760092"; // Tu número real
+                const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+
+                // 3. Restaurar la página
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                cart = []; 
+                updateCartUI();
+                toggleCart();
+
+                // 4. Abrir WhatsApp
+                window.open(urlWhatsApp, '_blank');
+            }, 1000);
+        }
+            const btn = document.querySelector('#cart-sidebar button.bg-primary-600');
+            const originalContent = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
             btn.disabled = true;
 
