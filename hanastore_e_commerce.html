@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HanaStore - Tu Tienda de Estilo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        // Tonos pastel rosados solicitados
+                        primary: {
+                            50: '#fdf2f8', // Rosa muy pálido
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f9a8d4', // Rosa pastel medio
+                            400: '#f472b6',
+                            500: '#ec4899',
+                            600: '#db2777', // Rosa más fuerte para contrastes
+                            900: '#831843',
+                        },
+                        secondary: {
+                            50: '#faf5f5', // Fondo general ligeramente cálido
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth scrolling y utilidades extra */
+        html { scroll-behavior: smooth; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .cart-slide-enter { transform: translateX(100%); }
+        .cart-slide-active { transform: translateX(0%); transition: transform 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-secondary-50 text-gray-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-md shadow-sm z-40 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <span class="font-serif text-3xl font-bold text-primary-600 tracking-tight">Hana<span class="text-gray-800">Store</span></span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#inicio" class="text-gray-600 hover:text-primary-600 font-medium transition-colors">Inicio</a>
+                    <a href="#coleccion" class="text-gray-600 hover:text-primary-600 font-medium transition-colors">Colección</a>
+                    <a href="#nosotros" class="text-gray-600 hover:text-primary-600 font-medium transition-colors">Nosotros</a>
+                    
+                    <!-- Cart Button -->
+                    <button onclick="toggleCart()" class="relative p-2 text-gray-600 hover:text-primary-600 transition-colors focus:outline-none">
+                        <i class="fa-solid fa-bag-shopping text-xl"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-primary-600 rounded-full hidden">0</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center space-x-4">
+                    <button onclick="toggleCart()" class="relative p-2 text-gray-600">
+                        <i class="fa-solid fa-bag-shopping text-xl"></i>
+                        <span id="mobile-cart-badge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-primary-600 rounded-full hidden">0</span>
+                    </button>
+                    <button onclick="toggleMobileMenu()" class="text-gray-600 focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#inicio" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md">Inicio</a>
+                <a href="#coleccion" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md">Colección</a>
+                <a href="#nosotros" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md">Nosotros</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cart Sidebar Overlay -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleCart()"></div>
+    
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h2 class="text-xl font-serif font-semibold text-gray-800">Tu Carrito</h2>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-6">
+            <!-- Cart items will be injected here via JS -->
+            <div class="h-full flex flex-col items-center justify-center text-gray-400">
+                <i class="fa-solid fa-basket-shopping text-4xl mb-4"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t border-gray-100 bg-gray-50">
+            <div class="flex justify-between text-lg font-medium text-gray-800 mb-4">
+                <p>Total</p>
+                <p id="cart-total">$0.00</p>
+            </div>
+            <p class="text-sm text-gray-500 mb-6">Los impuestos y gastos de envío se calculan en el checkout.</p>
+            <button onclick="checkout()" class="w-full bg-primary-600 text-white px-6 py-4 rounded-xl font-medium hover:bg-primary-700 transition-colors shadow-md flex justify-center items-center gap-2">
+                Proceder al Pago <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-green-400"></i>
+        <span id="toast-message">Item añadido al carrito</span>
+    </div>
+
+    <!-- AI Assistant Floating Button -->
+    <button onclick="toggleAIModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary-400 text-white rounded-full shadow-xl hover:bg-primary-500 hover:scale-105 transition-all z-40 flex items-center justify-center focus:outline-none">
+        <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
+    </button>
+
+    <!-- AI Assistant Modal -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/40 z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center px-4">
+        <div class="bg-secondary-50 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh] transform scale-95 transition-transform duration-300" id="ai-modal-content">
+            <!-- Header -->
+            <div class="bg-primary-100 p-4 border-b border-primary-200 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-300 rounded-full flex items-center justify-center text-white">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif font-bold text-gray-800 text-lg">Hana AI</h3>
+                        <p class="text-xs text-gray-600">Tu experta en Skincare Coreano</p>
+                    </div>
+                </div>
+                <button onclick="toggleAIModal()" class="text-gray-500 hover:text-gray-800 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Chat Box -->
+            <div id="ai-chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 bg-white/50">
+                <!-- Welcome Message -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-200 flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fa-solid fa-seedling text-primary-600 text-xs"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-primary-100 shadow-sm text-sm text-gray-700">
+                        ¡Hola! Soy Hana AI 🌸. Cuéntame sobre tu piel o <strong>sube una foto tuya</strong> usando el icono de la cámara, y analizaré visualmente qué rutina de nuestro catálogo es perfecta para ti.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Preview Area -->
+            <div id="image-preview-container" class="hidden px-4 pt-2 pb-1 bg-white border-t border-primary-100 flex items-center gap-3 transition-all">
+                <div class="relative">
+                    <img id="image-preview" src="" alt="Preview" class="h-14 w-14 object-cover rounded-lg border-2 border-primary-200 shadow-sm">
+                    <div class="absolute -top-2 -right-2 bg-white rounded-full p-0.5">
+                        <button type="button" onclick="clearImage()" class="text-gray-400 hover:text-red-500 bg-white rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <span class="text-xs text-primary-600 font-medium">Foto lista para analizar ✨</span>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-white border-t border-primary-100">
+                <form onsubmit="handleAISubmit(event)" class="flex gap-2 items-center">
+                    <label for="ai-image-upload" class="cursor-pointer text-primary-400 hover:text-primary-600 transition-colors p-2" title="Sube una foto para analizar tu piel">
+                        <i class="fa-solid fa-camera text-xl"></i>
+                        <input type="file" id="ai-image-upload" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    </label>
+                    <input type="text" id="ai-input" placeholder="Escribe aquí o sube una foto..." class="flex-1 bg-secondary-50 border border-primary-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300 text-sm text-gray-700">
+                    <button type="submit" id="ai-submit-btn" class="w-10 h-10 rounded-full bg-primary-400 text-white flex items-center justify-center hover:bg-primary-500 transition-colors disabled:opacity-50 flex-shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section id="inicio" class="relative pt-20">
+            <div class="absolute inset-0 z-0 h-[80vh] min-h-[600px] overflow-hidden bg-primary-50">
+                <!-- Imagen de Portada como fondo, con opacidad para no saturar -->
+                <img src="https://services.google.com/fh/files/misc/hanastore_cover.jpg" 
+                     onerror="this.src='https://images.unsplash.com/photo-1518002054494-3a6f94352e9d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'"
+                     alt="Fondo Floral HanaStore" 
+                     class="w-full h-full object-cover opacity-20 object-center">
+            </div>
+            
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80vh] min-h-[600px] flex items-center">
+                <div class="max-w-2xl bg-white/60 backdrop-blur-md p-8 sm:p-12 rounded-3xl shadow-xl border border-primary-100">
+                    <span class="text-primary-600 font-semibold tracking-wider uppercase text-sm mb-4 block">Belleza & Cuidado Personal</span>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-gray-900 leading-tight mb-6">
+                        Skincare Coreano con HanaStore
+                    </h1>
+                    <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+                        Explora nuestra colección exclusiva de cosmética coreana. Limpiadores, tónicos, protectores solares y sérums seleccionados para resaltar tu belleza natural.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#coleccion" class="inline-flex justify-center items-center px-8 py-4 border border-transparent text-base font-medium rounded-2xl text-white bg-primary-500 hover:bg-primary-600 shadow-lg hover:shadow-xl transition-all duration-300">
+                            Ver Colección
+                        </a>
+                        <a href="#nosotros" class="inline-flex justify-center items-center px-8 py-4 border-2 border-primary-300 text-base font-medium rounded-2xl text-primary-700 bg-white/50 hover:bg-primary-50 hover:border-primary-400 transition-all duration-300">
+                            Conócenos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products Section -->
+        <section id="coleccion" class="py-24 bg-white relative">
+            <div class="absolute top-0 w-full h-32 bg-gradient-to-b from-secondary-50 to-white"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-4">Nuestros Favoritos</h2>
+                    <div class="w-24 h-1 bg-primary-400 mx-auto mb-6 rounded-full"></div>
+                    <p class="text-gray-500 text-lg">Selección curada de nuestras piezas más amadas por la comunidad Hana.</p>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Products will be injected here via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="nosotros" class="py-24 bg-secondary-50 relative overflow-hidden">
+            <!-- Decorative circle -->
+            <div class="absolute -right-20 -top-20 w-96 h-96 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+                    <div class="mb-12 lg:mb-0 relative">
+                        <div class="absolute inset-0 bg-primary-200 transform translate-x-4 translate-y-4 rounded-3xl z-0 opacity-50"></div>
+                        <!-- Imagen de portada usada como imagen de "Nosotros" -->
+                        <div class="relative z-10 rounded-3xl shadow-xl w-full h-[500px] overflow-hidden bg-white flex items-center justify-center p-8">
+                            <img src="https://services.google.com/fh/files/misc/hanastore_cover.jpg" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"
+                                 alt="Nosotros Skincare" 
+                                 class="w-full h-full object-contain">
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-6">La Historia de Hana</h2>
+                        <p class="text-gray-600 mb-6 text-lg leading-relaxed">
+                            "Hana" significa flor en japonés, y ese es el concepto que inspira nuestra tienda. Somos especialistas en <strong>Skincare Coreano</strong>, trayendo los mejores productos de belleza, cosmética y cuidado personal directamente a ti.
+                        </p>
+                        <p class="text-gray-600 mb-8 text-lg leading-relaxed">
+                            Nos apasiona el cuidado de tu piel. Ofrecemos marcas reconocidas mundialmente, garantizando que encuentres la rutina perfecta sin importar tu tipo de piel.
+                        </p>
+                        
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary-100 mb-8 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-primary-50 rounded-bl-full"></div>
+                            <h3 class="font-bold text-gray-900 mb-3 text-lg relative z-10">Contáctanos directamente:</h3>
+                            <div class="flex flex-col gap-3 relative z-10">
+                                <a href="https://instagram.com/hana.store.nic" target="_blank" class="flex items-center gap-3 text-gray-600 hover:text-primary-600 transition-colors">
+                                    <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
+                                        <i class="fa-brands fa-instagram text-xl text-primary-500"></i>
+                                    </div>
+                                    <span class="font-medium">@hana.store.nic</span>
+                                </a>
+                                <a href="https://wa.me/50577760092" target="_blank" class="flex items-center gap-3 text-gray-600 hover:text-green-600 transition-colors">
+                                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+                                        <i class="fa-brands fa-whatsapp text-xl text-green-500"></i>
+                                    </div>
+                                    <span class="font-medium">+505 7776-0092</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6 border-t border-primary-100 pt-8">
+                            <div>
+                                <h4 class="text-3xl font-bold text-primary-500 mb-2">100%</h4>
+                                <p class="text-gray-500 font-medium">Original Coreano</p>
+                            </div>
+                            <div>
+                                <h4 class="text-3xl font-bold text-primary-500 mb-2">K-Beauty</h4>
+                                <p class="text-gray-500 font-medium">Marcas Exclusivas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-primary-100 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-1">
+                    <span class="font-serif text-3xl font-bold text-gray-800 tracking-tight mb-4 block">Hana<span class="text-primary-500">Store</span></span>
+                    <p class="text-gray-500 mb-6">Tu destino para la mejor cosmética y cuidado personal de Corea.</p>
+                    <div class="flex space-x-4">
+                        <a href="https://instagram.com/hana.store.nic" target="_blank" class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 hover:bg-primary-500 hover:text-white transition-colors shadow-sm">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="https://wa.me/50577760092" target="_blank" class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 hover:bg-green-500 hover:text-white transition-colors shadow-sm">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b border-primary-100 pb-2 inline-block">Enlaces Rápidos</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#inicio" class="text-gray-500 hover:text-primary-500 transition-colors">Inicio</a></li>
+                        <li><a href="#coleccion" class="text-gray-500 hover:text-primary-500 transition-colors">Colección</a></li>
+                        <li><a href="#nosotros" class="text-gray-500 hover:text-primary-500 transition-colors">Nuestra Historia</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b border-primary-100 pb-2 inline-block">Soporte</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-500 hover:text-primary-500 transition-colors">Preguntas Frecuentes</a></li>
+                        <li><a href="#" class="text-gray-500 hover:text-primary-500 transition-colors">Política de Envíos</a></li>
+                        <li><a href="#" class="text-gray-500 hover:text-primary-500 transition-colors">Devoluciones</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b border-primary-100 pb-2 inline-block">Newsletter</h3>
+                    <p class="text-gray-500 mb-4 text-sm">Suscríbete para recibir ofertas exclusivas y novedades.</p>
+                    <form class="flex" onsubmit="event.preventDefault(); showToast('¡Gracias por suscribirte!');">
+                        <input type="email" placeholder="Tu email" required class="bg-secondary-50 text-gray-700 px-4 py-2 rounded-l-xl border border-primary-100 border-r-0 focus:outline-none focus:ring-1 focus:ring-primary-400 w-full">
+                        <button type="submit" class="bg-primary-400 text-white px-4 py-2 rounded-r-xl hover:bg-primary-500 transition-colors">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-primary-100 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2026 HanaStore. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Datos de Productos (Actualizados con imágenes del PDF) ---
+        const products = [
+            {
+                id: 1,
+                name: "Purito From Green Deep Foaming Cleanser",
+                price: 10.00,
+                category: "Limpiadores",
+                skinType: "Todas las pieles",
+                content: "100ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_purito_cleanser.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Purito+Cleanser"
+            },
+            {
+                id: 2,
+                name: "Heimish All Clean White Clay Foam",
+                price: 16.88,
+                category: "Limpiadores",
+                skinType: "Todas las pieles",
+                content: "100ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_heimish_foam.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Heimish+Foam"
+            },
+            {
+                id: 3,
+                name: "Madagascar Centella Light Cleansing Oil",
+                price: 26.18,
+                category: "Aceites",
+                skinType: "Pieles Sensibles",
+                content: "100ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_centella_oil.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Centella+Oil"
+            },
+            {
+                id: 4,
+                name: "Face Shop Rice Water Bright Light Cleansing Oil",
+                price: 25.00,
+                category: "Aceites",
+                skinType: "Pieles Grasas o mixtas",
+                content: "100ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_ricewater_oil.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Rice+Water+Oil"
+            },
+            {
+                id: 5,
+                name: "Mixsoon Centella Sun Cream",
+                price: 9.99,
+                category: "Protectores Solares",
+                skinType: "Secas, mixtas, sensibles",
+                content: "50ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_mixsoon_sun.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Mixsoon+Sun"
+            },
+            {
+                id: 6,
+                name: "Beauty of Joseon Relief Sun : Rice + Probiotics",
+                price: 11.20,
+                category: "Protectores Solares",
+                skinType: "Secas, deshidratadas, sensibles",
+                content: "50ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_joseon_sun.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Joseon+Sun"
+            },
+            {
+                id: 7,
+                name: "Cosrx Aloe Soothing Sun Cream",
+                price: 15.30,
+                category: "Protectores Solares",
+                skinType: "Seca, normal, deshidratada",
+                content: "50ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_cosrx_aloe.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Cosrx+Aloe"
+            },
+            {
+                id: 8,
+                name: "Anua Heartleaf 77% Soothing Toner",
+                price: 15.17,
+                category: "Tónicos",
+                skinType: "Sensibles y secas",
+                content: "150ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_anua_toner.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Anua+Toner"
+            },
+            {
+                id: 9,
+                name: "One Thing Niacinamide 10%",
+                price: 7.65,
+                category: "Sérums",
+                skinType: "Todas las pieles",
+                content: "40ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_onething_niacinamide.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=One+Thing"
+            },
+            {
+                id: 10,
+                name: "Mixsoon Bean Essence",
+                price: 19.91,
+                category: "Sérums",
+                skinType: "Opacas, poros abiertos",
+                content: "50ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_mixsoon_bean.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Mixsoon+Bean"
+            },
+            {
+                id: 11,
+                name: "Holika Holika Aloe 99% Soothing Gel",
+                price: 23.00,
+                category: "Geles",
+                skinType: "Resecas, dañadas por sol",
+                content: "100ML",
+                image: "https://services.google.com/fh/files/misc/hanastore_holika_aloe.jpg", // Link simulado a tu imagen
+                fallback: "https://placehold.co/600x800/fce7f3/db2777?text=Holika+Aloe"
+            }
+        ];
+
+        let cart = [];
+        let isCartOpen = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            
+            // Efecto scroll en Navbar
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('navbar');
+                if (window.scrollY > 20) {
+                    nav.classList.add('shadow-md');
+                } else {
+                    nav.classList.remove('shadow-md');
+                }
+            });
+        });
+
+        // --- Funciones de Renderizado ---
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'group flex flex-col bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-primary-50';
+                
+                card.innerHTML = `
+                    <div class="relative w-full aspect-[4/5] overflow-hidden bg-primary-50 p-4 flex items-center justify-center">
+                        <img src="${product.image}" onerror="this.src='${product.fallback}'" alt="${product.name}" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-primary-600 shadow-sm border border-primary-100">
+                            ${product.content}
+                        </div>
+                        <div class="absolute inset-0 bg-primary-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-t-3xl">
+                            <button onclick="addToCart(${product.id})" class="transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white text-primary-600 px-6 py-3 rounded-full font-medium hover:bg-primary-50 shadow-lg flex items-center gap-2">
+                                <i class="fa-solid fa-cart-plus"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow bg-white">
+                        <span class="text-xs font-bold text-primary-400 uppercase tracking-wider mb-2">${product.category}</span>
+                        <h3 class="text-lg font-serif font-bold text-gray-800 mb-2 leading-tight">${product.name}</h3>
+                        <p class="text-xs text-gray-500 mb-4 bg-secondary-50 inline-block px-2 py-1 rounded-md w-fit border border-primary-50"><i class="fa-solid fa-droplet text-primary-300 mr-1"></i> ${product.skinType}</p>
+                        <div class="mt-auto flex items-center justify-between pt-2 border-t border-primary-50">
+                            <span class="text-xl font-bold text-gray-900">$${product.price.toFixed(2)}</span>
+                            <button onclick="addToCart(${product.id})" class="w-10 h-10 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center hover:bg-primary-500 hover:text-white transition-colors">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalElement = document.getElementById('cart-total');
+            const badges = [document.getElementById('cart-badge'), document.getElementById('mobile-cart-badge')];
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badges.forEach(badge => {
+                if (totalItems > 0) {
+                    badge.textContent = totalItems;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotalElement.textContent = `$${total.toFixed(2)}`;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-gray-400 mt-20">
+                        <div class="w-24 h-24 bg-primary-50 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-basket-shopping text-4xl text-primary-200"></i>
+                        </div>
+                        <p class="text-lg font-medium text-gray-500">Tu carrito está vacío</p>
+                        <button onclick="toggleCart()" class="mt-4 text-primary-500 font-medium hover:text-primary-600 transition-colors">Continuar comprando</button>
+                    </div>
+                `;
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            cart.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex gap-4 bg-white p-3 rounded-2xl border border-primary-100 shadow-sm relative';
+                itemEl.innerHTML = `
+                    <div class="w-20 h-24 bg-primary-50 rounded-xl p-1 flex items-center justify-center">
+                        <img src="${item.image}" onerror="this.src='${item.fallback}'" class="w-full h-full object-contain mix-blend-multiply">
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                            <h4 class="font-medium text-gray-800 line-clamp-2 pr-6 text-sm">${item.name}</h4>
+                            <p class="text-primary-600 font-bold mt-1">$${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-2 bg-secondary-50 w-fit rounded-lg px-2 py-1 border border-primary-50">
+                            <button onclick="updateQuantity(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-primary-600 rounded-md transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
+                            <span class="w-4 text-center font-medium text-sm text-gray-700">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-primary-600 rounded-md transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                cartItemsContainer.appendChild(itemEl);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCartUI();
+            showToast(`${product.name} añadido`);
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartUI();
+        }
+
+        function updateQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    updateCartUI();
+                }
+            }
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            const body = document.body;
+
+            isCartOpen = !isCartOpen;
+
+            if (isCartOpen) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                body.style.overflow = '';
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 3000);
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                showToast("Tu carrito está vacío.");
+                return;
+            }
+            
+            const btn = document.querySelector('#cart-sidebar button.bg-primary-600');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                cart = [];
+                updateCartUI();
+                toggleCart();
+                showToast("¡Compra exitosa! Gracias por tu pedido.");
+            }, 1500);
+        }
+
+        let isAiModalOpen = false;
+        let currentImageBase64 = null;
+        let currentImageMimeType = null;
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgPreview = document.getElementById('image-preview');
+                const container = document.getElementById('image-preview-container');
+                imgPreview.src = e.target.result;
+                container.classList.remove('hidden');
+
+                const base64Data = e.target.result.split(',')[1];
+                currentImageBase64 = base64Data;
+                currentImageMimeType = file.type;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            document.getElementById('ai-image-upload').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            currentImageBase64 = null;
+            currentImageMimeType = null;
+        }
+
+        function toggleAIModal() {
+            const modal = document.getElementById('ai-modal');
+            const content = document.getElementById('ai-modal-content');
+            
+            isAiModalOpen = !isAiModalOpen;
+            
+            if (isAiModalOpen) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const chatBox = document.getElementById('ai-chat-box');
+            const msgDiv = document.createElement('div');
+            
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+            if (sender === 'user') {
+                msgDiv.className = 'flex gap-3 justify-end';
+                msgDiv.innerHTML = `
+                    <div class="bg-primary-400 text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm max-w-[85%]">
+                        ${formattedText}
+                    </div>
+                `;
+            } else {
+                msgDiv.className = 'flex gap-3';
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary-200 flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fa-solid fa-seedling text-primary-600 text-xs"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-primary-100 shadow-sm text-sm text-gray-700 max-w-[85%] leading-relaxed">
+                        ${formattedText}
+                    </div>
+                `;
+            }
+            
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showAILoading(show) {
+            const btn = document.getElementById('ai-submit-btn');
+            const input = document.getElementById('ai-input');
+            const chatBox = document.getElementById('ai-chat-box');
+            
+            if (show) {
+                btn.disabled = true;
+                input.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'ai-typing-indicator';
+                loadingDiv.className = 'flex gap-3';
+                loadingDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary-200 flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fa-solid fa-seedling text-primary-600 text-xs"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-primary-100 shadow-sm text-sm flex items-center gap-1 w-16">
+                        <div class="w-2 h-2 bg-primary-300 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-primary-300 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-primary-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                `;
+                chatBox.appendChild(loadingDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                btn.disabled = false;
+                input.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+                input.focus();
+                
+                const loadingDiv = document.getElementById('ai-typing-indicator');
+                if (loadingDiv) loadingDiv.remove();
+            }
+        }
+
+        async function handleAISubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById('ai-input');
+            const userText = input.value.trim();
+            
+            if (!userText && !currentImageBase64) return;
+
+            let displayMessage = userText;
+            if (currentImageBase64) {
+                displayMessage = displayMessage ? displayMessage + '<br><br><i class="fa-solid fa-image text-primary-500"></i> <span class="text-primary-600 text-xs font-medium">Imagen adjuntada para análisis</span>' : '<i class="fa-solid fa-image text-primary-500"></i> <span class="text-primary-600 text-xs font-medium">Por favor, analiza mi piel en esta foto.</span>';
+            }
+            
+            appendMessage('user', displayMessage || "Analiza mi foto, por favor.");
+            input.value = '';
+            showAILoading(true);
+
+            let userMessageParts = [];
+            if (userText) {
+                userMessageParts.push({ text: userText });
+            } else {
+                 userMessageParts.push({ text: "Dime qué tipo de piel tengo basándote en esta foto y recomiéndame productos de la tienda." });
+            }
+
+            if (currentImageBase64) {
+                userMessageParts.push({
+                    inlineData: {
+                        mimeType: currentImageMimeType,
+                        data: currentImageBase64
+                    }
+                });
+                clearImage(); 
+            }
+
+            const catalogContext = products.map(p => 
+                `- ${p.name} (Categoría: ${p.category}, Para: ${p.skinType}, Precio: $${p.price.toFixed(2)})`
+            ).join('\n');
+
+            const systemPrompt = `Eres Hana, una experta, amigable y dulce asesora de skincare coreano para la tienda "HanaStore".
+            Tu tarea es recomendar rutinas de cuidado de la piel.
+            
+            REGLA ESTRICTA 1: SOLO puedes recomendar productos que existan en el siguiente catálogo de HanaStore:
+            ${catalogContext}
+
+            REGLA ESTRICTA 2 (VISIÓN): Si el usuario te envía una FOTO, debes actuar como una experta en análisis visual dermatológico. Evalúa sutilmente la piel que ves en la imagen (brillo por piel grasa, descamación por piel seca, rojeces, textura) y menciona qué notas. Basa tus recomendaciones de los productos del catálogo en ese análisis.
+
+            INSTRUCCIONES:
+            - Saluda de forma amable (usa emojis como 🌸, ✨, 🫧).
+            - Si hay foto, menciona qué características notas en su piel con mucha delicadeza y empatía.
+            - Recomienda 2 o 3 productos del catálogo que le sirvan.
+            - Explica brevemente POR QUÉ le recomiendas esos productos específicos.
+            - Nunca menciones productos que no estén en el catálogo provisto.
+            - Sé concisa, usa listas y escribe en español.`;
+
+            try {
+                const apiKey = ""; // La plataforma inyectará la API Key aquí
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ role: "user", parts: userMessageParts }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    appendMessage('ai', aiText);
+                } else {
+                    appendMessage('ai', "Ups, tuve un problema procesando tu solicitud. ¿Podrías intentar de nuevo? 🌸");
+                }
+            } catch (error) {
+                console.error("Error API:", error);
+                appendMessage('ai', "Lo siento, mi conexión con la base de datos se interrumpió. Por favor, intenta de nuevo más tarde. 🌸");
+            } finally {
+                showAILoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
