@@ -1,0 +1,1 @@
+const apiKey = ""; // La plataforma inyectará la API Key aquí
